@@ -43,6 +43,8 @@ class BlockchainSync(Sync):
         self.on_block_subscription: Optional[BroadcastSubscription] = None
         self.advance_loop_task: Optional[asyncio.Task] = None
         self.advance_loop_event = asyncio.Event()
+        self.filtering_channel_hashes = set()
+        self.blocking_channel_hashes = set()
 
     async def wait_for_chain_ready(self):
         while True:
@@ -327,6 +329,10 @@ class BlockchainSync(Sync):
         ending_height = await self.chain.db.get_best_height()
         await self.db.run(trending.calculate_trending, ending_height)
 
+    async def sync_claim_filtering(self):
+        await self.db.run(
+            claim_phase.update_claim_filters, self.blocking_channel_hashes, self.filtering_channel_hashes)
+
     async def advance(self):
         blocks_added = await self.sync_blocks()
         await self.sync_spends(blocks_added)
@@ -335,6 +341,7 @@ class BlockchainSync(Sync):
         await self.sync_supports(blocks_added)
         await self.sync_channel_stats(blocks_added, initial_claim_sync)
         await self.sync_trends()
+        await self.sync_claim_filtering()
         if blocks_added:
             await self._on_block_controller.add(BlockEvent(blocks_added[-1]))
 
