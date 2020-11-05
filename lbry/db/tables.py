@@ -318,5 +318,6 @@ Trending = Table(
 ClaimFilter = Table(
     'claim_filter', metadata,
     Column('claim_hash', LargeBinary, primary_key=True),
+    Column('owner_channel_hash', LargeBinary),
     Column('filter_type', SmallInteger),
 )
