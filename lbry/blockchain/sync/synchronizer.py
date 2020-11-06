@@ -1,6 +1,7 @@
 import os
 import asyncio
 import logging
+from binascii import unhexlify
 from typing import Optional, Tuple, Set, List, Coroutine
 
 from lbry.db import Database, trending
@@ -43,8 +44,12 @@ class BlockchainSync(Sync):
         self.on_block_subscription: Optional[BroadcastSubscription] = None
         self.advance_loop_task: Optional[asyncio.Task] = None
         self.advance_loop_event = asyncio.Event()
-        self.filtering_channel_hashes = set()
-        self.blocking_channel_hashes = set()
+        self.filtering_channel_hashes = {
+            unhexlify(channel_id)[::-1] for channel_id in
+            os.getenv('FILTERING_CHANNEL_IDS', '').split(' ') if channel_id}
+        self.blocking_channel_hashes = {
+            unhexlify(channel_id)[::-1] for channel_id in
+            os.getenv('BLOCKING_CHANNEL_IDS', '').split(' ') if channel_id}
 
     async def wait_for_chain_ready(self):
         while True:
