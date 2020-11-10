@@ -284,7 +284,8 @@ class SyncingBlockchainTestCase(BasicBlockchainTestCase):
         accepted = []
         for txo in await self.db.search_claims(
                 activation_height__gt=self.current_height,
-                expiration_height__gt=self.current_height):
+                expiration_height__gt=self.current_height,
+                order_by="name"):
             accepted.append((
                 txo.claim.stream.title, dewies_to_lbc(txo.amount),
                 dewies_to_lbc(txo.meta['staked_amount']), txo.meta['activation_height']
