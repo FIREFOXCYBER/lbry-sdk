@@ -284,8 +284,7 @@ class SyncingBlockchainTestCase(BasicBlockchainTestCase):
         accepted = []
         for txo in await self.db.search_claims(
                 activation_height__gt=self.current_height,
-                expiration_height__gt=self.current_height,
-                order_by="name"):
+                expiration_height__gt=self.current_height):
             accepted.append((
                 txo.claim.stream.title, dewies_to_lbc(txo.amount),
                 dewies_to_lbc(txo.meta['staked_amount']), txo.meta['activation_height']
@@ -1345,17 +1344,17 @@ class TestClaimtrieSync(SyncingBlockchainTestCase):
         await self.generate(1)
         results = await self.db.search_claims(channel="@some_channel")
         self.assertEqual(len(results.rows), 1)
-        self.assertEqual(results.censor.censored.get(moderator_chan.claim_hash), 1)
+        self.assertEqual(len(results.censor.censored.get(moderator_chan.claim_hash)), 1)
         await self.create_claim(sign=user_chan, name="reposting_bad", repost=bad_content.claim_id)
         await self.generate(1)
         results = await self.db.search_claims(channel="@some_channel")
         self.assertEqual(len(results.rows), 1)
-        self.assertEqual(results.censor.censored.get(moderator_chan.claim_hash), 2)
+        self.assertEqual(len(results.censor.censored.get(moderator_chan.claim_hash)), 2)
         await self.create_claim(sign=moderator_chan, name="blocking_bad", repost=user_chan.claim_id)
         await self.generate(1)
         results = await self.db.search_claims(channel="@some_channel")
         self.assertEqual(len(results.rows), 0)
-        self.assertEqual(results.censor.censored.get(moderator_chan.claim_hash), 3)  # good, bad and repost
+        self.assertEqual(len(results.censor.censored.get(moderator_chan.claim_hash)), 3)  # good, bad and repost
         # direct resolves are still possible
         result = await self.db.resolve([bad_content.permanent_url])
         self.assertEqual(bad_content.claim_id, result[bad_content.permanent_url].claim_id)
